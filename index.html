@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f8f4ee">
+  <meta name="description" content="A little camera magic with Coco, Nono, and Mimi. Real-time image recognition powered by Teachable Machine.">
+  <title>CoNoMi Recognition</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.3/dist/teachablemachine-image.min.js"></script>
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <div id="effects" aria-hidden="true"></div>
+  <div class="page">
+    <header><a class="brand" href="./"><span class="brand-icon">✿</span> CoNoMi<span class="brand-small">recognition studio</span></a><span class="header-note">A little curiosity. A little camera magic.</span></header>
+    <main>
+      <section class="intro"><span class="eyebrow">MEET YOUR LITTLE EVERYDAY CHARACTERS</span><h1>Who's in the <span>picture?</span><svg viewBox="0 0 240 15" aria-hidden="true"><path d="M4 10 Q110 -4 236 8"/></svg></h1><p>Coco, Nono, or Mimi? Turn on your camera<br class="desktop-break"> and let a little recognition magic happen.</p></section>
+      <div class="studio">
+        <section class="camera-card" aria-labelledby="camera-title">
+          <div class="card-heading"><h2 id="camera-title">Your little looking glass</h2><span id="camera-state" class="pill">● Camera off</span></div>
+          <div class="viewfinder">
+            <video id="webcam" autoplay muted playsinline aria-label="Live webcam preview" hidden></video>
+            <div id="placeholder"><div class="mascot"><span class="ear left"></span><span class="ear right"></span><span class="face">• ᴗ •</span></div><h3>Ready when you are</h3><p>A familiar face is all it takes.</p></div>
+            <span class="corner top-left"></span><span class="corner top-right"></span><span class="corner bottom-left"></span><span class="corner bottom-right"></span>
+            <span class="viewfinder-note">A LITTLE WINDOW INTO YOUR WORLD</span>
+          </div>
+          <div class="controls"><button id="start" class="primary" type="button"><span aria-hidden="true">▷</span> Start Camera</button><button id="stop" type="button" disabled><span aria-hidden="true">□</span> Stop Camera</button></div>
+          <p id="status" class="status" role="status">Start your camera to meet the characters.</p>
+        </section>
+        <section class="results-card" aria-labelledby="result-heading">
+          <span class="eyebrow">THE DISCOVERY CORNER</span><h2 id="result-heading">Look who’s here!</h2>
+          <div class="discovery"><span id="result-symbol" aria-hidden="true">✧</span><h3 id="prediction" aria-live="polite">A little mystery…</h3><p id="confidence">Your next discovery is one click away.</p></div>
+          <div class="scores-heading"><h3>A closer look</h3><span>Confidence</span></div><div id="scores"><p class="empty-scores">Your model’s characters will appear here when you start.</p></div>
+          <div class="threshold-note"><span aria-hidden="true">✦</span><p>A match needs <strong>over 80% confidence.</strong><br>Until then, we’ll keep searching.</p></div>
+        </section>
+      </div>
+      <section class="tips" aria-label="Getting started"><div><span>01</span><p><strong>Let the camera in</strong>Tap Start Camera and allow access.</p></div><div><span>02</span><p><strong>Say a little hello</strong>Keep your subject in frame, in good light.</p></div><div><span>03</span><p><strong>Watch the magic</strong>A confident match brings a new mood.</p></div></section>
+    </main>
+    <footer><span>Made for Coco, Nono & Mimi <span aria-hidden="true">♡</span></span><span>Predictions happen in your browser. No video is uploaded.</span></footer>
+  </div>
+</body>
+</html>
