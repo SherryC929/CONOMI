@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f8f4ee">
+  <meta name="theme-color" content="#F6E9D8">
   <meta name="description" content="A little camera magic with Coco, Nono, and Mimi. Real-time image recognition powered by Teachable Machine.">
   <title>CoNoMi Recognition</title>
   <link rel="stylesheet" href="style.css">
@@ -12,33 +12,37 @@
   <script defer src="script.js"></script>
 </head>
 <body>
-  <div id="effects" aria-hidden="true"></div>
+  <div id="background-decorations" aria-hidden="true"><div id="decoration-a" class="decoration-layer"></div><div id="decoration-b" class="decoration-layer"></div></div>
+  <div id="confetti" aria-hidden="true"></div>
   <div class="page">
-    <header><a class="brand" href="./"><span class="brand-icon">✿</span> CoNoMi<span class="brand-small">recognition studio</span></a><span class="header-note">A little curiosity. A little camera magic.</span></header>
+    <header><a class="brand" href="./"><span class="brand-icon" aria-hidden="true">✳</span><span>CoNoMi<small>THE C929 CHOCOLATE BAKERY</small></span></a><span class="header-note">Baked with love. Shared with friends. ♡</span></header>
     <main>
-      <section class="intro"><span class="eyebrow">MEET YOUR LITTLE EVERYDAY CHARACTERS</span><h1>Who's in the <span>picture?</span><svg viewBox="0 0 240 15" aria-hidden="true"><path d="M4 10 Q110 -4 236 8"/></svg></h1><p>Coco, Nono, or Mimi? Turn on your camera<br class="desktop-break"> and let a little recognition magic happen.</p></section>
+      <section class="intro">
+        <div class="cookie-planet" aria-hidden="true"><span>✦</span><i></i><b>✧</b></div>
+        <h1>Welcome to <span>Planet C929!</span></h1>
+        <p class="subtitle">Coco and Nono are Mimi’s guardian angels, and her very best friends.<br>With them by her side, Mimi feels like the luckiest little soul in the universe.</p>
+        <span class="intro-signoff">✧ &nbsp; There’s always a place for you here. &nbsp; ✧</span>
+      </section>
       <div class="studio">
         <section class="camera-card" aria-labelledby="camera-title">
-          <div class="card-heading"><h2 id="camera-title">Your little looking glass</h2><span id="camera-state" class="pill">● Camera off</span></div>
+          <div class="card-heading"><div><span class="eyebrow">A WINDOW INTO OUR LITTLE WORLD</span><h2 id="camera-title">Through the Cookie Lens</h2></div><span id="camera-state" class="pill">● Camera off</span></div>
           <div class="viewfinder">
             <video id="webcam" autoplay muted playsinline aria-label="Live webcam preview" hidden></video>
-            <div id="placeholder"><div class="mascot"><span class="ear left"></span><span class="ear right"></span><span class="face">• ᴗ •</span></div><h3>Ready when you are</h3><p>A familiar face is all it takes.</p></div>
+            <div id="placeholder"><div class="mascot" aria-hidden="true"><span class="chip chip-one"></span><span class="chip chip-two"></span><span class="chip chip-three"></span><span class="face">• ᴗ •</span></div><h3>A sweet hello starts here.</h3></div>
             <span class="corner top-left"></span><span class="corner top-right"></span><span class="corner bottom-left"></span><span class="corner bottom-right"></span>
-            <span class="viewfinder-note">A LITTLE WINDOW INTO YOUR WORLD</span>
           </div>
           <div class="controls"><button id="start" class="primary" type="button"><span aria-hidden="true">▷</span> Start Camera</button><button id="stop" type="button" disabled><span aria-hidden="true">□</span> Stop Camera</button></div>
-          <p id="status" class="status" role="status">Start your camera to meet the characters.</p>
+          <p id="status" class="status" role="status">Start your camera and say hello to C929.</p>
         </section>
         <section class="results-card" aria-labelledby="result-heading">
-          <span class="eyebrow">THE DISCOVERY CORNER</span><h2 id="result-heading">Look who’s here!</h2>
-          <div class="discovery"><span id="result-symbol" aria-hidden="true">✧</span><h3 id="prediction" aria-live="polite">A little mystery…</h3><p id="confidence">Your next discovery is one click away.</p></div>
-          <div class="scores-heading"><h3>A closer look</h3><span>Confidence</span></div><div id="scores"><p class="empty-scores">Your model’s characters will appear here when you start.</p></div>
-          <div class="threshold-note"><span aria-hidden="true">✦</span><p>A match needs <strong>over 80% confidence.</strong><br>Until then, we’ll keep searching.</p></div>
+          <span class="eyebrow">A SEAT AT OUR TABLE</span><h2 id="result-heading">Who's visiting today?</h2>
+          <div class="discovery"><div class="portrait"><span id="result-symbol" aria-hidden="true">♡</span><img id="result-avatar" alt="" width="112" height="112" hidden><div id="effects" aria-hidden="true"></div></div><h3 id="prediction" aria-live="polite">Someone sweet is on their way...</h3><p id="character-message" aria-live="polite">A familiar face makes this little planet feel like home.</p><p id="confidence">Waiting for a little camera magic.</p></div>
+          <div class="scores-heading"><h3>A sprinkle of certainty</h3><span>Confidence</span></div><div id="scores"><p class="empty-scores">Our friends’ confidence scores will appear when you open the camera.</p></div>
+          <div class="threshold-note"><span aria-hidden="true">✧</span><p>A sweet hello needs <strong>over 80% confidence.</strong></p></div>
         </section>
       </div>
-      <section class="tips" aria-label="Getting started"><div><span>01</span><p><strong>Let the camera in</strong>Tap Start Camera and allow access.</p></div><div><span>02</span><p><strong>Say a little hello</strong>Keep your subject in frame, in good light.</p></div><div><span>03</span><p><strong>Watch the magic</strong>A confident match brings a new mood.</p></div></section>
     </main>
-    <footer><span>Made for Coco, Nono & Mimi <span aria-hidden="true">♡</span></span><span>Predictions happen in your browser. No video is uploaded.</span></footer>
+    <footer><span><strong>CoNoMi · Planet C929</strong><br>Three friends. A thousand little reasons to feel at home. ♡</span><span>Camera magic stays in your browser.<br>No video is uploaded.</span></footer>
   </div>
 </body>
 </html>

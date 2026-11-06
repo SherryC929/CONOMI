@@ -8,6 +8,102 @@ inputCanvas.width = inputCanvas.height = 224;
 const context = inputCanvas.getContext('2d');
 let modelPromise, model, labels = [], rows = [];
 let stream = null, frameId = null, session = 0, activeTheme = null;
+const MATCH_STREAK = 3;
+const CHARACTER_PALETTES = {
+  Coco: ['#E8B8B4', '#FFF9F1', '#B88764', '#DF658B'],
+  Nono: ['#F6A34F', '#FFD85A', '#FFF9F1', '#EE8151'],
+  Mimi: ['#A9DBF0', '#A5DFCA', '#C3B4E7', '#688ED7'],
+  CoNoMi: ['#795548', '#E8B8B4', '#DBAF48', '#FFF9F1']
+};
+let candidate = null, candidateCount = 0, confirmedCharacter = null;
+let visibleDecorationLayer = 0;
+const motionPreference = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+const mobilePreference = window.matchMedia?.('(max-width: 760px)');
+
+function characterFor(index) {
+  return index === null ? null : labels[index]?.trim().split(/\s+/).pop();
+}
+
+// Two bounded layers crossfade; CSS moves their small reusable particle pools.
+function drawDecorations(character) {
+  const layers = [$('decoration-a'), $('decoration-b')];
+  const previous = layers[visibleDecorationLayer];
+  visibleDecorationLayer = 1 - visibleDecorationLayer;
+  const next = layers[visibleDecorationLayer];
+  next.replaceChildren();
+  previous.classList.remove('visible');
+  if (motionPreference?.matches) {
+    previous.replaceChildren();
+    return;
+  }
+  const kind = { Coco: 'cookie', Nono: 'egg', Mimi: 'bubble', CoNoMi: 'heart' }[character] || 'ambient';
+  const count = kind === 'bubble' ? (mobilePreference?.matches ? 12 : 24) : (mobilePreference?.matches ? 10 : 20);
+  for (let i = 0; i < count; i++) {
+    const floater = document.createElement('span');
+    floater.className = 'floater floater-' + kind;
+    floater.style.setProperty('--left', `${(i + Math.random()) / count * 100}%`);
+    floater.style.setProperty('--size', `${kind === 'bubble' ? 20 + Math.random() * (mobilePreference?.matches ? 36 : 55) : 22 + Math.random() * 26}px`);
+    const duration = (12 + Math.random() * 8) / 1.4;
+    floater.style.setProperty('--duration', `${duration}s`);
+    // Spread the reusable particles through the whole journey from the first frame.
+    floater.style.setProperty('--delay', `${-(i + Math.random()) / count * duration}s`);
+    floater.style.setProperty('--drift', `${Math.random() * 130 - 65}px`);
+    floater.style.setProperty('--turn', `${Math.random() * 100 - 50}deg`);
+    const shape = document.createElement('i');
+    shape.className = 'floating-shape ' + kind;
+    floater.append(shape);
+    next.append(floater);
+  }
+  next.classList.add('visible');
+}
+
+function celebrate(character) {
+  const container = $('confetti');
+  container.replaceChildren(); // Rapid confirmed changes never accumulate bursts.
+  if (motionPreference?.matches) return;
+  const palette = CHARACTER_PALETTES[character];
+  if (!palette) return;
+  const count = mobilePreference?.matches ? 30 : 54;
+  for (let i = 0; i < count; i++) {
+    const piece = document.createElement('span');
+    const right = i % 2 === 1;
+    piece.className = 'confetti-piece ' + ['paper', 'ribbon', 'dot', 'star'][i % 4];
+    piece.style.setProperty('--edge', right ? '100%' : '0%');
+    piece.style.setProperty('--travel', `${(right ? -1 : 1) * (22 + Math.random() * 40)}vw`);
+    piece.style.setProperty('--lift', `${-120 - Math.random() * 180}px`);
+    piece.style.setProperty('--fall', `${160 + Math.random() * 160}px`);
+    piece.style.setProperty('--spin', `${Math.random() * 720 - 360}deg`);
+    piece.style.setProperty('--color', palette[Math.floor(Math.random() * palette.length)]);
+    piece.style.setProperty('--delay', `${Math.random() * 0.15}s`);
+    piece.addEventListener('animationend', () => piece.remove(), { once: true });
+    container.append(piece);
+  }
+}
+
+function confirmCharacter(index) {
+  const next = characterFor(index);
+  if (!next || !CHARACTER_PALETTES[next]) { candidate = null; candidateCount = 0; return; }
+  if (candidate === next) candidateCount = Math.min(MATCH_STREAK, candidateCount + 1);
+  else { candidate = next; candidateCount = 1; }
+  if (candidateCount < MATCH_STREAK || confirmedCharacter === next) return;
+  confirmedCharacter = next;
+  document.body.dataset.character = next;
+  drawDecorations(next);
+  celebrate(next);
+}
+
+function resetCharacterBackground() {
+  candidate = null; candidateCount = 0; confirmedCharacter = null;
+  delete document.body.dataset.character;
+  $('confetti').replaceChildren();
+  drawDecorations(null);
+}
+
+motionPreference?.addEventListener('change', () => {
+  $('confetti').replaceChildren();
+  drawDecorations(confirmedCharacter);
+});
+mobilePreference?.addEventListener('change', () => drawDecorations(confirmedCharacter));
 
 function setStatus(message, error = false) {
   $('status').textContent = message;
@@ -39,26 +135,39 @@ function createScoreRows() {
   });
 }
 
-// Visuals follow metadata order, so renamed or additional classes work automatically.
+// Presentation only: recognition and camera processing remain independent.
 function setTheme(index) {
   if (activeTheme === index) return;
   activeTheme = index;
   $('effects').replaceChildren();
-  if (index === null) { delete document.body.dataset.theme; $('result-symbol').textContent = '✧'; return; }
+  // Match the English part of the metadata label, independent of class order.
+  const avatarFiles = { Coco: 'Coco.jpg', Nono: 'Nono.jpg', Mimi: 'Mimi.jpg', CoNoMi: 'CoNoMi.jpg' };
+  const messages = {
+    Coco: 'Coco is here to watch over Mimi!',
+    Nono: 'Nono brings a little more magic to C929!',
+    Mimi: "Here's Mimi, the luckiest one on C929!",
+    CoNoMi: 'Together, they make C929 feel like home.'
+  };
+  const className = index === null ? '' : labels[index];
+  const character = className.trim().split(/\s+/).pop();
+  const avatarFile = avatarFiles[character];
+  $('character-message').textContent = messages[character] || 'A familiar face makes this little planet feel like home.';
+  $('result-avatar').hidden = !avatarFile;
+  $('result-symbol').hidden = Boolean(avatarFile);
+  if (avatarFile) {
+    $('result-avatar').src = avatarFile;
+    $('result-avatar').alt = className;
+    if (!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      $('result-avatar').animate?.([{ opacity: 0.3, transform: 'translateY(3px)' }, { opacity: 1, transform: 'translateY(0)' }], { duration: 300, easing: 'ease-out' });
+    }
+  }
+  if (index === null) { delete document.body.dataset.theme; $('result-symbol').textContent = '♡'; return; }
   const theme = index % 4;
   document.body.dataset.theme = theme;
-  const symbols = ['♥', '✦', '○', '✿'];
-  const effects = ['hearts', 'stars', 'bubbles', 'confetti'];
-  $('result-symbol').textContent = symbols[theme];
-  for (let i = 0; i < 16; i++) {
+  for (let i = 0; i < 3; i++) {
     const particle = document.createElement('span');
-    particle.className = 'particle ' + effects[theme];
-    particle.textContent = theme === 2 ? '' : symbols[theme];
-    particle.style.setProperty('--x', `${(i * 37) % 100}%`);
-    particle.style.setProperty('--y', `${(i * 23) % 100}%`);
-    particle.style.setProperty('--duration', `${5 + i % 5}s`);
-    particle.style.setProperty('--delay', `${-i * 0.7}s`);
-    particle.style.setProperty('--size', `${14 + i % 4 * 7}px`);
+    particle.className = 'particle';
+    particle.textContent = '✦';
     $('effects').append(particle);
   }
 }
@@ -71,8 +180,11 @@ function renderPredictions(predictions) {
     rows[index].fill.style.width = `${probability * 100}%`;
     if (probability > bestProbability) { bestIndex = index; bestProbability = probability; }
   });
+  confirmCharacter(bestIndex < 0 ? null : bestIndex);
+  // Scores stay live; a new avatar/name waits for the short confirmation streak.
+  if (bestIndex >= 0 && CHARACTER_PALETTES[characterFor(bestIndex)] && characterFor(bestIndex) !== confirmedCharacter) bestIndex = -1;
   $('prediction').textContent = bestIndex < 0 ? 'Searching...' : labels[bestIndex];
-  $('confidence').textContent = bestIndex < 0 ? 'Keep your subject in view — looking for a confident match.' : `${(bestProbability * 100).toFixed(1)}% confidence · Hello, you!`;
+  $('confidence').textContent = bestIndex < 0 ? 'Someone sweet is on their way...' : `${(bestProbability * 100).toFixed(1)}% confidence`;
   setTheme(bestIndex < 0 ? null : bestIndex);
 }
 
@@ -103,10 +215,11 @@ function stopCamera() {
   $('placeholder').hidden = false;
   $('start').disabled = false; $('stop').disabled = true;
   $('camera-state').textContent = '● Camera off'; $('camera-state').classList.remove('live');
-  $('prediction').textContent = 'A little mystery…';
-  $('confidence').textContent = 'Your next discovery is one click away.';
+  $('prediction').textContent = 'Someone sweet is on their way...';
+  $('confidence').textContent = 'Waiting for a little camera magic.';
   rows.forEach(({ value, fill }) => { value.textContent = '—'; fill.style.width = '0%'; });
   setTheme(null); setStatus('Camera stopped. Come back for more little discoveries.');
+  resetCharacterBackground();
 }
 
 async function startCamera() {
@@ -151,3 +264,4 @@ $('start').addEventListener('click', startCamera);
 $('stop').addEventListener('click', stopCamera);
 window.addEventListener('pagehide', stopCamera);
 document.addEventListener('visibilitychange', () => { if (document.hidden && $('start').disabled) stopCamera(); });
+drawDecorations(null);
